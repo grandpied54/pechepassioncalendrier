@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Calendrier Tiny House</title>
+</head>
+<body>
+  <h1>Disponibilités - Tiny House</h1>
+  <script>
+    fetch('/api/merged?which=tiny').then(r => r.json()).then(data => {
+      document.body.insertAdjacentHTML('beforeend', '<pre>'+JSON.stringify(data,null,2)+'</pre>');
+    });
+  </script>
+</body>
+</html>

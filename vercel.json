@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "functions": {
+    "api/merged.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "routes": [
+    { "src": "/api/merged", "dest": "/api/merged.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}

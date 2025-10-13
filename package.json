@@ -1,0 +1,7 @@
+{
+  "name": "pechepassioncalendrier",
+  "version": "1.0.0",
+  "dependencies": {
+    "node-ical": "^0.15.0"
+  }
+}
