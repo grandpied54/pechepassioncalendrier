@@ -1,68 +1,68 @@
 import ical from 'node-ical';
 
-function setCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
+const calendarURLs = {
+  tiny: [
+    process.env.TINY_AIRBNB_ICAL_URL,
+    process.env.TINY_BOOKING_ICAL_URL
+  ],
+  studio: [
+    process.env.STUDIO_AIRBNB_ICAL_URL,
+    process.env.STUDIO_BOOKING_ICAL_URL
+  ]
+};
 
-export default async function handler(req, res) {
-  setCors(res);
-  if (req.method === 'OPTIONS') return res.status(200).end();
+async function fetchAndMergeCalendars(urls) {
+  const allEvents = [];
 
-  const which = (req.query.which || '').toString();
-  const map = {
-    tiny: [process.env.TINY_AIRBNB_ICAL, process.env.TINY_BOOKING_ICAL],
-    studio: [process.env.STUDIO_AIRBNB_ICAL, process.env.STUDIO_BOOKING_ICAL],
-  };
-
-  if (!map[which]) {
-    return res.status(400).json({ error: "Missing or invalid 'which' param. Use 'tiny' or 'studio'." });
-  }
-
-  const urls = map[which].filter(Boolean);
-  if (!urls.length) return res.status(400).json({ error: 'No ICS urls configured for this calendar.' });
-
-  try {
-    const allEvents = [];
-    for (const url of urls) {
+  for (const url of urls) {
+    if (!url) continue; // ignore les URLs vides
+    try {
       const data = await ical.async.fromURL(url);
-      for (const k of Object.keys(data)) {
-        const ev = data[k];
+      for (const key in data) {
+        const ev = data[key];
         if (ev.type === 'VEVENT') {
           allEvents.push({
-            summary: ev.summary || 'Réservé',
             start: ev.start,
-            end: ev.end
+            end: ev.end,
+            summary: ev.summary || '',
+            location: ev.location || '',
+            source: url
           });
         }
       }
+    } catch (err) {
+      console.error(`❌ Erreur lors du chargement de ${url}:`, err.message);
+    }
+  }
+
+  allEvents.sort((a, b) => a.start - b.start);
+  return allEvents;
+}
+
+export default async function handler(req, res) {
+  try {
+    let { which } = req.query;
+
+    // ✅ Défaut : Tiny si aucun paramètre n’est fourni
+    if (!which) {
+      which = 'tiny';
+      console.log('⚠️ Aucun paramètre "which" fourni — utilisation de "tiny" par défaut');
     }
 
-    const bookings = allEvents
-      .map(ev => ({
-        start: ev.start ? new Date(ev.start) : null,
-        end: ev.end ? new Date(ev.end) : null,
-        summary: ev.summary || 'Réservé'
-      }))
-      .filter(b => b.start && b.end);
+    const urls = calendarURLs[which];
 
-    bookings.sort((a, b) => a.start - b.start);
-
-    const merged = [];
-    for (const b of bookings) {
-      if (!merged.length) { merged.push({ ...b }); continue; }
-      const last = merged[merged.length - 1];
-      if (b.start <= last.end) {
-        if (b.end > last.end) last.end = b.end;
-      } else {
-        merged.push({ ...b });
-      }
+    if (!urls || urls.length === 0 || urls.every(u => !u)) {
+      return res.status(400).json({
+        error: `Aucune URL iCal n'est configurée pour "${which}".`,
+        hint: 'Vérifie tes variables d’environnement sur Vercel.'
+      });
     }
 
-    res.status(200).json({ which, bookings: merged });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Failed to load ICS', details: String(e) });
+    const events = await fetchAndMergeCalendars(urls);
+    return res.status(200).json({ logement: which, count: events.length, events });
+
+  } catch (error) {
+    console.error('❌ Erreur interne du serveur:', error);
+    return res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 }
