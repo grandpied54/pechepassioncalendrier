@@ -2,14 +2,46 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calendrier Studio Perché</title>
+  <title>Disponibilités - Studio Perché</title>
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #calendar { max-width: 900px; margin: 0 auto; }
+  </style>
 </head>
 <body>
   <h1>Disponibilités - Studio Perché</h1>
+
+  <div id="calendar"></div>
+
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
   <script>
-    fetch('/api/merged?which=studio').then(r => r.json()).then(data => {
-      document.body.insertAdjacentHTML('beforeend', '<pre>'+JSON.stringify(data,null,2)+'</pre>');
-    });
+    fetch('/api/merged?which=studio')
+      .then(response => response.json())
+      .then(data => {
+        const events = data.events.map(e => ({
+          title: e.summary || 'Réservé',
+          start: e.start,
+          end: e.end
+        }));
+
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          locale: 'fr',
+          height: 'auto',
+          events: events
+        });
+        calendar.render();
+      })
+      .catch(err => {
+        console.error('Erreur API:', err);
+        document.body.insertAdjacentHTML('beforeend', '<p style="color:red;">Erreur de chargement du calendrier.</p>');
+      });
   </script>
 </body>
 </html>
