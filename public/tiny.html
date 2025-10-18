@@ -40,6 +40,10 @@
     .fc-event-main {
       border-radius: 4px;
     }
+
+    .fc-daygrid-event {
+      margin-right: -8px; /* chevauche léger */
+    }
   </style>
 </head>
 <body>
@@ -75,16 +79,16 @@
           height: 'auto',
           events: events,
           eventDidMount(info) {
+            const el = info.el;
+            el.style.overflow = 'visible';
+            const main = el.querySelector('.fc-event-main');
+            if (main) {
+              main.style.borderTopRightRadius = '10px';
+              main.style.borderBottomRightRadius = '10px';
+            }
+
             if (info.isEnd) {
-              const el = info.el;
-              el.style.overflow = 'visible';
-              const main = el.querySelector('.fc-event-main');
-              if (main) {
-                main.style.borderTopRightRadius = '10px';
-                main.style.borderBottomRightRadius = '10px';
-              }
-              el.style.width = '25%';  // 👈 barre courte
-              el.style.marginRight = '-4px';  // 👈 petit débordement
+              el.style.marginRight = '-12px'; // 👈 chevauchement visible sur jour libre
             }
           }
         });
