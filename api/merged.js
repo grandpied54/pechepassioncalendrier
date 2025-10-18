@@ -16,34 +16,44 @@ async function fetchAndMergeCalendars(urls) {
 
   for (const url of urls) {
     if (!url) continue; // ignore les URLs vides
+
     try {
       const data = await ical.async.fromURL(url);
       for (const key in data) {
         const ev = data[key];
-        if (ev.type === 'VEVENT') {
-          let color = '#888'; // couleur par défaut (gris)
-          if (url.includes('airbnb')) {
-            color = '#ff5a5f'; // rouge Airbnb
-          } else if (url.includes('booking')) {
-            color = '#0071c2'; // bleu Booking
-          }
+        if (ev.type !== 'VEVENT') continue;
 
-          allEvents.push({
-            start: ev.start,
-            end: ev.end,
-            summary: ev.summary || 'Réservé',
-            location: ev.location || '',
-            source: url,
-            color: color
-          });
-        }
+        // 🎨 Couleur selon la source
+        let color = '#888'; // par défaut
+        if (url.includes('airbnb')) color = '#ff5a5f'; // rouge
+        else if (url.includes('booking')) color = '#0071c2'; // bleu
+
+        // 📝 Texte affiché dans le calendrier
+        let summaryText = 'Fermé';
+        if (url.includes('airbnb')) summaryText = 'Airbnb - Réservé';
+        else if (url.includes('booking')) summaryText = 'Booking - Réservé';
+
+        // 📅 Correction de la date de fin pour libérer le jour de départ
+        const correctedEnd = new Date(ev.end);
+        correctedEnd.setDate(correctedEnd.getDate() - 1);
+        correctedEnd.setHours(23, 59, 59, 999);
+
+        allEvents.push({
+          start: ev.start,
+          end: correctedEnd,
+          summary: summaryText,
+          location: ev.location || '',
+          source: url,
+          color: color,
+          departureDay: ev.end // 👈 utilisé pour afficher la petite barre sur le jour de départ
+        });
       }
     } catch (err) {
       console.error(`❌ Erreur lors du chargement de ${url}:`, err.message);
     }
   }
 
-  // Tri par date
+  // Tri des événements par date
   allEvents.sort((a, b) => a.start - b.start);
   return allEvents;
 }
@@ -75,3 +85,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 }
+
