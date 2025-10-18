@@ -21,12 +21,20 @@ async function fetchAndMergeCalendars(urls) {
       for (const key in data) {
         const ev = data[key];
         if (ev.type === 'VEVENT') {
+          let color = '#888'; // couleur par défaut (gris)
+          if (url.includes('airbnb')) {
+            color = '#ff5a5f'; // rouge Airbnb
+          } else if (url.includes('booking')) {
+            color = '#0071c2'; // bleu Booking
+          }
+
           allEvents.push({
             start: ev.start,
             end: ev.end,
-            summary: ev.summary || '',
+            summary: ev.summary || 'Réservé',
             location: ev.location || '',
-            source: url
+            source: url,
+            color: color
           });
         }
       }
@@ -35,6 +43,7 @@ async function fetchAndMergeCalendars(urls) {
     }
   }
 
+  // Tri par date
   allEvents.sort((a, b) => a.start - b.start);
   return allEvents;
 }
