@@ -83,13 +83,15 @@
 
             const bar = document.createElement('div');
             bar.style.height = '4px';
+            bar.style.width = '25%'; // ✅ largeur réduite
             bar.style.background = info.event.backgroundColor || info.event.color;
-            bar.style.opacity = '0.7';
+            bar.style.opacity = '0.9';
             bar.style.position = 'absolute';
-            bar.style.bottom = '2px';
-            bar.style.left = '0';
-            bar.style.right = '0';
+            bar.style.bottom = '4px';
+            bar.style.left = '50%';
+            bar.style.transform = 'translateX(-50%)'; // ✅ centré
             bar.style.borderRadius = '2px';
+
             cell.style.position = 'relative';
             cell.appendChild(bar);
           }
@@ -103,4 +105,5 @@
   </script>
 </body>
 </html>
+
 
