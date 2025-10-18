@@ -1,4 +1,4 @@
-import ical from 'node-ical';
+imimport ical from 'node-ical';
 
 const calendarURLs = {
   tiny: [
@@ -11,11 +11,21 @@ const calendarURLs = {
   ]
 };
 
+// Détermine le type selon l'heure
+function getTypeFromDate(date, isStart) {
+  const hour = date.getHours();
+  if (isStart) {
+    return hour > 8 ? 'arrival' : 'full';
+  } else {
+    return hour < 23 ? 'departure' : 'full';
+  }
+}
+
 async function fetchAndMergeCalendars(urls) {
   const allEvents = [];
 
   for (const url of urls) {
-    if (!url) continue; // ignore les URLs vides
+    if (!url) continue;
 
     try {
       const data = await ical.async.fromURL(url);
@@ -23,29 +33,21 @@ async function fetchAndMergeCalendars(urls) {
         const ev = data[key];
         if (ev.type !== 'VEVENT') continue;
 
-        // 🎨 Couleur selon la source
-        let color = '#888'; // par défaut
-        if (url.includes('airbnb')) color = '#ff5a5f'; // rouge
-        else if (url.includes('booking')) color = '#0071c2'; // bleu
+        let color = '#888';
+        if (url.includes('airbnb')) color = '#ff5a5f';
+        else if (url.includes('booking')) color = '#0071c2';
 
-        // 📝 Texte affiché dans le calendrier
-        let summaryText = 'Fermé';
-        if (url.includes('airbnb')) summaryText = 'Airbnb - Réservé';
-        else if (url.includes('booking')) summaryText = 'Booking - Réservé';
-
-        // 📅 Correction de la date de fin pour libérer le jour de départ
-        const correctedEnd = new Date(ev.end);
-        correctedEnd.setDate(correctedEnd.getDate() - 1);
-        correctedEnd.setHours(23, 59, 59, 999);
+        const startType = getTypeFromDate(ev.start, true);
+        const endType = getTypeFromDate(ev.end, false);
 
         allEvents.push({
           start: ev.start,
-          end: correctedEnd,
-          summary: summaryText,
-          location: ev.location || '',
+          end: ev.end,
+          summary: ev.summary || 'Réservé',
           source: url,
-          color: color,
-          departureDay: ev.end // 👈 utilisé pour afficher la petite barre sur le jour de départ
+          color,
+          startType,
+          endType
         });
       }
     } catch (err) {
@@ -53,7 +55,6 @@ async function fetchAndMergeCalendars(urls) {
     }
   }
 
-  // Tri des événements par date
   allEvents.sort((a, b) => a.start - b.start);
   return allEvents;
 }
@@ -61,12 +62,7 @@ async function fetchAndMergeCalendars(urls) {
 export default async function handler(req, res) {
   try {
     let { which } = req.query;
-
-    // ✅ Défaut : Tiny si aucun paramètre n’est fourni
-    if (!which) {
-      which = 'tiny';
-      console.log('⚠️ Aucun paramètre "which" fourni — utilisation de "tiny" par défaut');
-    }
+    if (!which) which = 'tiny';
 
     const urls = calendarURLs[which];
 
