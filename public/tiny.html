@@ -22,30 +22,6 @@
     }
     #legend span {
       display: inline-block;
-      width: 15px;<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Disponibilités - Tiny House</title>
-
-  <!-- FullCalendar CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #legend {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #legend span {
-      display: inline-block;
       width: 15px;
       height: 15px;
       border-radius: 3px;
@@ -61,15 +37,8 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    /* ✨ Effet de chevauchement des barres de réservation */
     .fc-event-main {
       border-radius: 4px;
-    }
-    .fc-daygrid-event {
-      margin-right: -6px; /* 👈 chevauche légèrement le lendemain */
-    }
-    .fc-daygrid-event-harness {
-      overflow: visible !important;
     }
   </style>
 </head>
@@ -104,7 +73,20 @@
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
-          events: events
+          events: events,
+          eventDidMount(info) {
+            if (info.isEnd) {
+              const el = info.el;
+              el.style.overflow = 'visible';
+              const main = el.querySelector('.fc-event-main');
+              if (main) {
+                main.style.borderTopRightRadius = '10px';
+                main.style.borderBottomRightRadius = '10px';
+              }
+              el.style.width = '95%';
+              el.style.marginRight = '-6px';
+            }
+          }
         });
         calendar.render();
       })
