@@ -37,15 +37,8 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
-    /* ✨ Effet de chevauchement des barres de réservation */
     .fc-event-main {
       border-radius: 4px;
-    }
-    .fc-daygrid-event {
-      margin-right: -6px; /* 👈 chevauche légèrement le lendemain */
-    }
-    .fc-daygrid-event-harness {
-      overflow: visible !important;
     }
   </style>
 </head>
@@ -80,7 +73,22 @@
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
-          events: events
+          events: events,
+          eventDidMount(info) {
+            // 👉 Appliquer le style uniquement au dernier segment
+            if (info.isEnd) {
+              const el = info.el;
+              el.style.overflow = 'visible';
+              const main = el.querySelector('.fc-event-main');
+              if (main) {
+                main.style.borderTopRightRadius = '10px';
+                main.style.borderBottomRightRadius = '10px';
+              }
+              // Ajuste ici l'effet visuel
+              el.style.width = '95%';
+              el.style.marginRight = '-6px';
+            }
+          }
         });
         calendar.render();
       })
