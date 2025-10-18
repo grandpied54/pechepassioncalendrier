@@ -2,14 +2,38 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Calendrier Tiny House</title>
+  <title>Disponibilités - Tiny House</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #calendar { max-width: 900px; margin: 0 auto; }
+  </style>
 </head>
 <body>
   <h1>Disponibilités - Tiny House</h1>
+  <div id="calendar"></div>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script>
-    fetch('/api/merged?which=tiny').then(r => r.json()).then(data => {
-      document.body.insertAdjacentHTML('beforeend', '<pre>'+JSON.stringify(data,null,2)+'</pre>');
-    });
+    fetch('/api/merged?which=tiny')
+      .then(r => r.json())
+      .then(data => {
+        const events = data.events.map(e => ({
+          title: e.summary || 'Réservé',
+          start: e.start,
+          end: e.end
+        }));
+        const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+          initialView: 'dayGridMonth',
+          locale: 'fr',
+          height: 'auto',
+          events: events
+        });
+        calendar.render();
+      })
+      .catch(err => {
+        console.error('Erreur API:', err);
+        document.body.insertAdjacentHTML('beforeend', '<p style="color:red;">Erreur de chargement du calendrier.</p>');
+      });
   </script>
 </body>
 </html>
