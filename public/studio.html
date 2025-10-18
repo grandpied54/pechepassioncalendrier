@@ -45,6 +45,7 @@
   <div id="legend">
     <span style="background:#ff5a5f;"></span> Airbnb
     <span style="margin-left:20px;background:#0071c2;"></span> Booking
+    <span style="margin-left:20px;background:#888;"></span> Fermé
   </div>
 
   <div id="calendar"></div>
@@ -60,7 +61,10 @@
           title: e.summary || 'Réservé',
           start: e.start,
           end: e.end,
-          color: e.color || '#888' // 🟡 couleur envoyée par l'API
+          color: e.color || '#888',
+          extendedProps: {
+            departureDay: e.departureDay
+          }
         }));
 
         const calendarEl = document.getElementById('calendar');
@@ -68,7 +72,27 @@
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
-          events: events
+          events: events,
+          eventDidMount: function(info) {
+            const dep = info.event.extendedProps.departureDay;
+            if (!dep) return;
+
+            const date = new Date(dep).toISOString().split('T')[0];
+            const cell = document.querySelector(`[data-date="${date}"]`);
+            if (!cell) return;
+
+            const bar = document.createElement('div');
+            bar.style.height = '4px';
+            bar.style.background = info.event.backgroundColor || info.event.color;
+            bar.style.opacity = '0.7';
+            bar.style.position = 'absolute';
+            bar.style.bottom = '2px';
+            bar.style.left = '0';
+            bar.style.right = '0';
+            bar.style.borderRadius = '2px';
+            cell.style.position = 'relative';
+            cell.appendChild(bar);
+          }
         });
         calendar.render();
       })
