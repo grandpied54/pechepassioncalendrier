@@ -3,8 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Disponibilités - Studio Perché</title>
-
-  <!-- FullCalendar CSS -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
   <style>
     body {
@@ -14,7 +12,17 @@
     }
     h1 {
       text-align: center;
+      margin-bottom: 10px;
+    }
+    #back-link {
+      display: block;
+      text-align: center;
       margin-bottom: 20px;
+    }
+    #back-link a {
+      text-decoration: none;
+      color: #0071c2;
+      font-weight: bold;
     }
     #legend {
       text-align: center;
@@ -36,21 +44,19 @@
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     .fc-event-main {
       border-radius: 4px;
     }
-
-    /* chevauchement léger sur tous les jours */
     .fc-daygrid-event {
-      margin-right: -8px; /* chevauche le jour suivant */
+      margin-right: -6px;
+      min-width: 0 !important; /* Pour que les barres restent visibles sur mobile */
     }
   </style>
 </head>
 <body>
   <h1>Disponibilités - Studio Perché</h1>
+  <div id="back-link"><a href="/index.html">🏠 Retour à l'accueil</a></div>
 
-  <!-- 🏷️ Légende -->
   <div id="legend">
     <span style="background:#ff5a5f;"></span> Airbnb
     <span style="margin-left:20px;background:#0071c2;"></span> Booking
@@ -59,9 +65,7 @@
 
   <div id="calendar"></div>
 
-  <!-- FullCalendar JS -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-
   <script>
     fetch('/api/merged?which=studio')
       .then(response => response.json())
@@ -70,11 +74,14 @@
           title: e.summary || 'Réservé',
           start: e.start,
           end: e.end,
-          color: e.color || '#888'
+          color: e.color || '#888',
+          extendedProps: {
+            startType: e.startType,
+            endType: e.endType
+          }
         }));
 
-        const calendarEl = document.getElementById('calendar');
-        const calendar = new FullCalendar.Calendar(calendarEl, {
+        const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
@@ -82,15 +89,25 @@
           eventDidMount(info) {
             const el = info.el;
             el.style.overflow = 'visible';
-            const main = el.querySelector('.fc-event-main');
-            if (main) {
-              main.style.borderTopRightRadius = '10px';
-              main.style.borderBottomRightRadius = '10px';
-            }
 
-            // 👇 Chevauchement plus prononcé sur le dernier jour
-            if (info.isEnd) {
-              el.style.marginRight = '-12px';
+            const props = info.event.extendedProps;
+
+            // arrivée → courte à droite
+            if (props.startType === 'arrival' && props.endType === 'full') {
+              el.style.width = '20%';
+              el.style.marginLeft = 'auto';
+              el.style.marginRight = '-8px';
+            }
+            // départ → courte à gauche
+            else if (props.startType === 'full' && props.endType === 'departure') {
+              el.style.width = '20%';
+              el.style.marginLeft = '0';
+              el.style.marginRight = 'auto';
+            }
+            // séjour complet → barre pleine + chevauchement
+            else if (props.startType === 'full' && props.endType === 'full') {
+              el.style.width = '100%';
+              el.style.marginRight = '-8px';
             }
           }
         });
