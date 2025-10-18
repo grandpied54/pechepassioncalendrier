@@ -40,6 +40,11 @@
     .fc-event-main {
       border-radius: 4px;
     }
+
+    /* chevauchement léger sur tous les jours */
+    .fc-daygrid-event {
+      margin-right: -8px; /* chevauche le jour suivant */
+    }
   </style>
 </head>
 <body>
@@ -75,18 +80,17 @@
           height: 'auto',
           events: events,
           eventDidMount(info) {
-            // Appliquer uniquement au dernier segment
+            const el = info.el;
+            el.style.overflow = 'visible';
+            const main = el.querySelector('.fc-event-main');
+            if (main) {
+              main.style.borderTopRightRadius = '10px';
+              main.style.borderBottomRightRadius = '10px';
+            }
+
+            // 👇 Chevauchement plus prononcé sur le dernier jour
             if (info.isEnd) {
-              const el = info.el;
-              el.style.overflow = 'visible';
-              const main = el.querySelector('.fc-event-main');
-              if (main) {
-                main.style.borderTopRightRadius = '10px';
-                main.style.borderBottomRightRadius = '10px';
-              }
-              // 🧭 Barre courte de 25 % + petit chevauchement
-              el.style.width = '25%';
-              el.style.marginRight = '-4px';
+              el.style.marginRight = '-12px';
             }
           }
         });
@@ -99,6 +103,5 @@
   </script>
 </body>
 </html>
-
 
 
