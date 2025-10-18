@@ -75,7 +75,7 @@
           height: 'auto',
           events: events,
           eventDidMount(info) {
-            // 👉 Appliquer le style uniquement au dernier segment
+            // Appliquer uniquement au dernier segment
             if (info.isEnd) {
               const el = info.el;
               el.style.overflow = 'visible';
@@ -84,9 +84,9 @@
                 main.style.borderTopRightRadius = '10px';
                 main.style.borderBottomRightRadius = '10px';
               }
-              // Ajuste ici l'effet visuel
-              el.style.width = '95%';
-              el.style.marginRight = '-6px';
+              // 🧭 Barre courte de 25 % + petit chevauchement
+              el.style.width = '25%';
+              el.style.marginRight = '-4px';
             }
           }
         });
@@ -99,5 +99,6 @@
   </script>
 </body>
 </html>
+
 
 
