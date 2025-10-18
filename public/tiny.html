@@ -22,6 +22,30 @@
     }
     #legend span {
       display: inline-block;
+      width: 15px;<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Disponibilités - Tiny House</title>
+
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #legend {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #legend span {
+      display: inline-block;
       width: 15px;
       height: 15px;
       border-radius: 3px;
@@ -35,6 +59,17 @@
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* ✨ Effet de chevauchement des barres de réservation */
+    .fc-event-main {
+      border-radius: 4px;
+    }
+    .fc-daygrid-event {
+      margin-right: -6px; /* 👈 chevauche légèrement le lendemain */
+    }
+    .fc-daygrid-event-harness {
+      overflow: visible !important;
     }
   </style>
 </head>
@@ -61,10 +96,7 @@
           title: e.summary || 'Réservé',
           start: e.start,
           end: e.end,
-          color: e.color || '#888',
-          extendedProps: {
-            departureDay: e.departureDay
-          }
+          color: e.color || '#888'
         }));
 
         const calendarEl = document.getElementById('calendar');
@@ -72,29 +104,7 @@
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
-          events: events,
-          eventDidMount: function(info) {
-            const dep = info.event.extendedProps.departureDay;
-            if (!dep) return;
-
-            const date = new Date(dep).toISOString().split('T')[0];
-            const cell = document.querySelector(`[data-date="${date}"]`);
-            if (!cell) return;
-
-            const bar = document.createElement('div');
-            bar.style.height = '4px';
-            bar.style.width = '25%'; // ✅ largeur réduite
-            bar.style.background = info.event.backgroundColor || info.event.color;
-            bar.style.opacity = '0.9';
-            bar.style.position = 'absolute';
-            bar.style.bottom = '4px';
-            bar.style.left = '50%';
-            bar.style.transform = 'translateX(-50%)'; // ✅ centré
-            bar.style.borderRadius = '2px';
-
-            cell.style.position = 'relative';
-            cell.appendChild(bar);
-          }
+          events: events
         });
         calendar.render();
       })
