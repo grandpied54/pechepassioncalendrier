@@ -66,6 +66,7 @@
   <div id="calendar"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
   <script>
     fetch('/api/merged?which=tiny')
       .then(response => response.json())
@@ -89,6 +90,8 @@
           eventDidMount(info) {
             const el = info.el;
             el.style.overflow = 'visible';
+            el.style.maxWidth = 'none';     // ⬅️ empêche FullCalendar de forcer une largeur
+            el.style.flex = '1 1 100%';     // ⬅️ permet la barre pleine sur arrivée
 
             const props = info.event.extendedProps;
 
