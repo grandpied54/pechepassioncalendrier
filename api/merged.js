@@ -1,4 +1,4 @@
-imimport ical from 'node-ical';
+import ical from 'node-ical';
 
 const calendarURLs = {
   tiny: [
@@ -11,9 +11,15 @@ const calendarURLs = {
   ]
 };
 
-// Détermine le type selon l'heure
+// ✅ Fonction sécurisée pour déterminer le type selon l'heure
 function getTypeFromDate(date, isStart) {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    console.error('⚠️ Date invalide détectée dans un événement iCal');
+    return 'full';
+  }
+
   const hour = date.getHours();
+
   if (isStart) {
     return hour > 8 ? 'arrival' : 'full';
   } else {
@@ -81,4 +87,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 }
-
