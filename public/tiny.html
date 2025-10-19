@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Disponibilités - Tiny House</title>
-  <!-- ✅ CSS fiable -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
@@ -31,7 +30,6 @@
   <div id="calendar"></div>
   <div id="error" class="error-box" style="display:none;"></div>
 
-  <!-- ✅ JS global FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 
@@ -76,16 +74,19 @@
             el.style.overflow = 'visible';
             const { startType, endType } = info.event.extendedProps;
 
-            // 📅 Arrivée ou séjour complet → barre pleine + chevauchement léger
+            // 📅 arrivée ou séjour complet
             if (startType === 'arrival' || (startType === 'full' && endType === 'full')) {
               el.style.width = '100%';
-              el.style.marginRight = 'auto';
+              el.style.marginRight = '-8px';
             }
-            // 🚪 Départ → barre courte (20%) alignée à gauche
+
+            // 🚪 départ → barre courte
             else if (endType === 'departure') {
               el.style.width = '20%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
+              el.style.position = 'relative';
+              el.style.zIndex = '5';
             }
           }
         });
