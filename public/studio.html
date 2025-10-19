@@ -66,6 +66,7 @@
   <div id="calendar"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
   <script>
     fetch('/api/merged?which=studio')
       .then(response => response.json())
@@ -92,23 +93,16 @@
 
             const props = info.event.extendedProps;
 
-            if (props.startType === 'arrival' && props.endType === 'full') {
-              el.style.width = '20%';
-              el.style.marginLeft = 'auto';
-              el.style.marginRight = '-8px';
-            }
-            else if (props.startType === 'full' && props.endType === 'departure') {
-              el.style.width = '20%';
-              el.style.marginLeft = '0';
-              el.style.marginRight = 'auto';
-            }
-            else if (props.startType === 'full' && props.endType === 'full') {
+            // 📅 arrivée ou séjour complet → barre pleine
+            if (props.startType === 'arrival' || (props.startType === 'full' && props.endType === 'full')) {
               el.style.width = '100%';
               el.style.marginRight = '-8px';
             }
-            else if (props.startType === 'arrival' && props.endType === 'departure') {
+            // 🚪 départ → barre courte à gauche
+            else if (props.endType === 'departure') {
               el.style.width = '20%';
-              el.style.margin = '0 auto';
+              el.style.marginLeft = '0';
+              el.style.marginRight = 'auto';
             }
           }
         });
