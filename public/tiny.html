@@ -52,10 +52,6 @@
         }
 
         const data = await resp.json();
-        if (data.errors && data.errors.length) {
-          console.warn('⚠️ Erreurs partielle(s) côté API:', data.errors);
-        }
-
         const events = (data.events || []).map(e => ({
           title: e.summary || 'Réservé',
           start: e.start,
@@ -74,23 +70,29 @@
             el.style.overflow = 'visible';
             el.style.transition = 'none';
 
-            const { startType, endType } = info.event.extendedProps;
+            const { endType } = info.event.extendedProps;
 
-            // 📅 arrivée ou séjour complet → barre pleine + chevauchement visuel
-            if (startType === 'arrival' || (startType === 'full' && endType === 'full')) {
-              el.style.width = 'calc(100% + 6px)';
-              el.style.marginRight = '-6px';
-              el.style.marginLeft = '0';
-            }
-            // 🚪 départ → barre courte
-            else if (endType === 'departure') {
+            // 🚪 Jour de départ → barre courte
+            if (endType === 'departure') {
               el.style.width = '20%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
+              el.style.zIndex = '5';
+            }
+            // 📅 Jour d'arrivée ou séjour complet → barre pleine + chevauchement
+            else {
+              el.style.width = 'calc(100% + 6px)';
+              el.style.marginRight = '-6px';
+              el.style.marginLeft = '0';
+              el.style.zIndex = '10';
+            }
+
+            // 🟦 Booking au-dessus si même jour qu'un autre
+            if (info.event.title.toLowerCase().includes('booking')) {
+              el.style.zIndex = '15';
             }
 
             el.style.position = 'relative';
-            el.style.zIndex = '5';
           }
         });
 
