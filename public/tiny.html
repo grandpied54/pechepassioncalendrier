@@ -92,27 +92,16 @@
 
             const props = info.event.extendedProps;
 
-            // arrivée → courte à droite
-            if (props.startType === 'arrival' && props.endType === 'full') {
-              el.style.width = '20%';
-              el.style.marginLeft = 'auto';
-              el.style.marginRight = '-8px';
-            }
-            // départ → courte à gauche
-            else if (props.startType === 'full' && props.endType === 'departure') {
-              el.style.width = '20%';
-              el.style.marginLeft = '0';
-              el.style.marginRight = 'auto';
-            }
-            // séjour complet → barre pleine + chevauchement
-            else if (props.startType === 'full' && props.endType === 'full') {
+            // 📅 arrivée ou séjour complet → barre pleine
+            if (props.startType === 'arrival' || (props.startType === 'full' && props.endType === 'full')) {
               el.style.width = '100%';
               el.style.marginRight = '-8px';
             }
-            // départ + arrivée le même jour
-            else if (props.startType === 'arrival' && props.endType === 'departure') {
+            // 🚪 départ → barre courte alignée à gauche
+            else if (props.endType === 'departure') {
               el.style.width = '20%';
-              el.style.margin = '0 auto';
+              el.style.marginLeft = '0';
+              el.style.marginRight = 'auto';
             }
           }
         });
