@@ -52,10 +52,6 @@
         }
 
         const data = await resp.json();
-        if (data.errors && data.errors.length) {
-          console.warn('⚠️ Erreurs partielle(s) côté API:', data.errors);
-        }
-
         const events = (data.events || []).map(e => ({
           title: e.summary || 'Réservé',
           start: e.start,
@@ -74,20 +70,25 @@
             el.style.overflow = 'visible';
             el.style.transition = 'none';
 
-            const { startType, endType } = info.event.extendedProps;
+            const { endType } = info.event.extendedProps;
 
-            if (startType === 'arrival' || (startType === 'full' && endType === 'full')) {
-              el.style.width = 'calc(100% + 6px)';
-              el.style.marginRight = '-6px';
-              el.style.marginLeft = '0';
-            } else if (endType === 'departure') {
+            if (endType === 'departure') {
               el.style.width = '20%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
+              el.style.zIndex = '5';
+            } else {
+              el.style.width = 'calc(100% + 6px)';
+              el.style.marginRight = '-6px';
+              el.style.marginLeft = '0';
+              el.style.zIndex = '10';
+            }
+
+            if (info.event.title.toLowerCase().includes('booking')) {
+              el.style.zIndex = '15';
             }
 
             el.style.position = 'relative';
-            el.style.zIndex = '5';
           }
         });
 
