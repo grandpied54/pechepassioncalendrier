@@ -72,18 +72,22 @@
           eventDidMount(info) {
             const el = info.el;
             el.style.overflow = 'visible';
+            el.style.transition = 'none';
+
             const { startType, endType } = info.event.extendedProps;
 
             if (startType === 'arrival' || (startType === 'full' && endType === 'full')) {
-              el.style.width = '100%';
-              el.style.marginRight = '-8px';
+              el.style.width = 'calc(100% + 6px)';
+              el.style.marginRight = '-6px';
+              el.style.marginLeft = '0';
             } else if (endType === 'departure') {
               el.style.width = '20%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
-              el.style.position = 'relative';
-              el.style.zIndex = '5';
             }
+
+            el.style.position = 'relative';
+            el.style.zIndex = '5';
           }
         });
 
