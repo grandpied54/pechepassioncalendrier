@@ -46,6 +46,13 @@ async function fetchAndMergeCalendars(urls) {
         const startType = getTypeFromDate(ev.start, true);
         const endType = getTypeFromDate(ev.end, false);
 
+        // 🔸 Étendre artificiellement la durée pour les arrivées
+        if (startType === 'arrival') {
+          const endForDisplay = new Date(ev.start);
+          endForDisplay.setHours(23, 59, 59, 999);
+          ev.end = endForDisplay;
+        }
+
         allEvents.push({
           start: ev.start,
           end: ev.end,
