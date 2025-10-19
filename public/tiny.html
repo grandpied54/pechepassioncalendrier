@@ -49,6 +49,7 @@
     }
     .fc-daygrid-event {
       margin-right: -6px;
+      min-width: 0 !important;
     }
   </style>
 </head>
@@ -93,13 +94,13 @@
 
             // arrivée → courte à droite
             if (props.startType === 'arrival' && props.endType === 'full') {
-              el.style.width = '25%';
+              el.style.width = '20%';
               el.style.marginLeft = 'auto';
               el.style.marginRight = '-8px';
             }
             // départ → courte à gauche
             else if (props.startType === 'full' && props.endType === 'departure') {
-              el.style.width = '25%';
+              el.style.width = '20%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
             }
@@ -107,6 +108,11 @@
             else if (props.startType === 'full' && props.endType === 'full') {
               el.style.width = '100%';
               el.style.marginRight = '-8px';
+            }
+            // départ + arrivée le même jour
+            else if (props.startType === 'arrival' && props.endType === 'departure') {
+              el.style.width = '20%';
+              el.style.margin = '0 auto';
             }
           }
         });
@@ -119,4 +125,3 @@
   </script>
 </body>
 </html>
-
