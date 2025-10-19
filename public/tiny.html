@@ -90,8 +90,6 @@
           eventDidMount(info) {
             const el = info.el;
             el.style.overflow = 'visible';
-            el.style.maxWidth = 'none';     // ⬅️ empêche FullCalendar de forcer une largeur
-            el.style.flex = '1 1 100%';     // ⬅️ permet la barre pleine sur arrivée
 
             const props = info.event.extendedProps;
 
@@ -100,7 +98,7 @@
               el.style.width = '100%';
               el.style.marginRight = '-8px';
             }
-            // 🚪 départ → barre courte alignée à gauche
+            // 🚪 départ → barre courte à gauche
             else if (props.endType === 'departure') {
               el.style.width = '20%';
               el.style.marginLeft = '0';
