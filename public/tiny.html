@@ -79,7 +79,7 @@
             // 📅 Arrivée ou séjour complet → barre pleine + chevauchement léger
             if (startType === 'arrival' || (startType === 'full' && endType === 'full')) {
               el.style.width = '100%';
-              el.style.marginRight = '-8px';
+              el.style.marginRight = 'auto';
             }
             // 🚪 Départ → barre courte (20%) alignée à gauche
             else if (endType === 'departure') {
