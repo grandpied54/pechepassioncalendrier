@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Disponibilités - Studio Perché</title>
+  <!-- ✅ CSS fiable -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
@@ -30,8 +31,10 @@
   <div id="calendar"></div>
   <div id="error" class="error-box" style="display:none;"></div>
 
+  <!-- ✅ JS global FullCalendar -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
+
   <script>
     const errorBox = document.getElementById('error');
 
@@ -60,21 +63,17 @@
           start: e.start,
           end: e.end,
           color: e.color || '#888',
-          extendedProps: {
-            startType: e.startType,
-            endType: e.endType
-          }
+          extendedProps: { startType: e.startType, endType: e.endType }
         }));
 
         const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
-          events: events,
+          events,
           eventDidMount(info) {
             const el = info.el;
             el.style.overflow = 'visible';
-
             const { startType, endType } = info.event.extendedProps;
 
             if (startType === 'arrival' || (startType === 'full' && endType === 'full')) {
@@ -89,10 +88,7 @@
         });
 
         calendar.render();
-
-        if (!events.length) {
-          showError('Aucune réservation à afficher pour le moment.');
-        }
+        if (!events.length) showError('Aucune réservation à afficher pour le moment.');
 
       } catch (err) {
         console.error('❌ Erreur JS côté front:', err);
