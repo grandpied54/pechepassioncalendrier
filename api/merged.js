@@ -1,4 +1,3 @@
-// api/merged.js
 import ical from 'node-ical';
 
 const calendarURLs = {
@@ -12,49 +11,46 @@ const calendarURLs = {
   ]
 };
 
-// Détermine le "type" pour l'affichage (arrivée / départ / plein)
+// Détermine si c'est une arrivée, un départ ou un séjour complet
 function getTypeFromDate(date, isStart) {
-  // Sécurisation
-  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
-    console.error('⚠️ Date invalide détectée dans un événement iCal');
-    return 'full';
-  }
+  if (!date || isNaN(date.getTime())) return 'full';
   const hour = date.getHours();
+
+  // 📌 arrivée dans la journée → "arrival"
   if (isStart) {
-    // Arrivée en journée ⇒ "arrival"
     return hour > 8 ? 'arrival' : 'full';
-  } else {
-    // Départ en journée ⇒ "departure"
+  }
+  // 📌 départ en journée → "departure"
+  else {
     return hour < 23 ? 'departure' : 'full';
   }
 }
 
 async function fetchAndMergeCalendars(urls) {
   const events = [];
-  const errors = [];
 
   for (const url of urls) {
     if (!url) continue;
+
     try {
       const data = await ical.async.fromURL(url);
+
       for (const key in data) {
         const ev = data[key];
         if (!ev || ev.type !== 'VEVENT') continue;
 
-        // Couleur selon la source
         let color = '#888';
-        const u = url.toLowerCase();
-        if (u.includes('airbnb')) color = '#ff5a5f';     // rouge Airbnb
-        else if (u.includes('booking')) color = '#0071c2'; // bleu Booking
+        const lowerUrl = url.toLowerCase();
+        if (lowerUrl.includes('airbnb')) color = '#ff5a5f';
+        if (lowerUrl.includes('booking')) color = '#0071c2';
 
         const startType = getTypeFromDate(ev.start, true);
-        const endType   = getTypeFromDate(ev.end,   false);
+        const endType = getTypeFromDate(ev.end, false);
 
         events.push({
           start: ev.start,
           end: ev.end,
           summary: ev.summary || 'Réservé',
-          location: ev.location || '',
           source: url,
           color,
           startType,
@@ -62,13 +58,13 @@ async function fetchAndMergeCalendars(urls) {
         });
       }
     } catch (err) {
-      console.error(`❌ Erreur lors du chargement de ${url}:`, err?.message || err);
-      errors.push({ url, error: String(err?.message || err) });
+      console.error(`❌ Erreur lors du chargement de ${url}:`, err.message);
     }
   }
 
+  // Trier par date
   events.sort((a, b) => a.start - b.start);
-  return { events, errors };
+  return events;
 }
 
 export default async function handler(req, res) {
@@ -78,21 +74,11 @@ export default async function handler(req, res) {
 
     const urls = calendarURLs[which];
     if (!urls || urls.length === 0 || urls.every(u => !u)) {
-      return res.status(400).json({
-        error: `Aucune URL iCal n'est configurée pour "${which}".`,
-        hint: 'Vérifie tes variables d’environnement sur Vercel : STUDIO_*/TINY_*.'
-      });
+      return res.status(400).json({ error: `Aucune URL iCal n'est configurée pour "${which}"` });
     }
 
-    const { events, errors } = await fetchAndMergeCalendars(urls);
-
-    // On renvoie 200 même s'il y a des erreurs partielles, avec un "errors" pour debug
-    return res.status(200).json({
-      logement: which,
-      count: events.length,
-      errors,          // utile pour voir côté front si une URL plante
-      events
-    });
+    const events = await fetchAndMergeCalendars(urls);
+    return res.status(200).json({ logement: which, count: events.length, events });
 
   } catch (error) {
     console.error('❌ Erreur interne du serveur:', error);
