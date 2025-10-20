@@ -87,23 +87,22 @@
 
             const { startType, endType } = info.event.extendedProps;
 
-            // Départ → barre courte à gauche
             if (endType === 'departure') {
-              el.style.width = '25%';
+              el.style.width = '20%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
               el.style.borderTopRightRadius = '0';
               el.style.borderBottomRightRadius = '0';
               el.style.zIndex = '5';
             }
-            // Arrivée → barre pleine + dépassement à droite
             else if (startType === 'arrival') {
-              el.style.width = 'calc(100% + 15%)';
-              el.style.marginRight = '-15%';
+              el.style.width = 'calc(100% + 25%)';
+              el.style.marginRight = '-25%';
               el.style.marginLeft = '0';
+              el.style.borderTopRightRadius = '20px';
+              el.style.borderBottomRightRadius = '20px';
               el.style.zIndex = '10';
             }
-            // Séjour complet
             else {
               el.style.width = '100%';
               el.style.marginLeft = '0';
