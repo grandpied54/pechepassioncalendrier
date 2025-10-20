@@ -1,20 +1,49 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Disponibilités - Tiny House</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
-    h1 { text-align: center; margin-bottom: 10px; }
-    #back-link { text-align: center; margin-bottom: 20px; }
-    #back-link a { text-decoration: none; color: #0071c2; font-weight: bold; }
-    #legend { text-align: center; margin-bottom: 20px; }
-    #legend span { display: inline-block; width: 15px; height: 15px; border-radius: 3px; margin-right: 5px; vertical-align: middle; }
-    #calendar { max-width: 900px; margin: 0 auto; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .fc-event-main { border-radius: 4px; }
-    .fc-daygrid-event { margin-right: -6px; min-width: 0 !important; }
-    .error-box { max-width: 900px; margin: 1rem auto; color: #b00020; background: #ffecec; padding: .75rem 1rem; border-radius: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    #back-link {
+      display: block;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #back-link a {
+      text-decoration: none;
+      color: #0071c2;
+      font-weight: bold;
+    }
+    #legend {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #legend span {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    #calendar {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
@@ -28,82 +57,72 @@
   </div>
 
   <div id="calendar"></div>
-  <div id="error" class="error-box" style="display:none;"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
-
   <script>
-    const errorBox = document.getElementById('error');
-
-    function showError(msg) {
-      errorBox.style.display = 'block';
-      errorBox.textContent = msg;
-    }
-
-    (async () => {
-      try {
-        const resp = await fetch('/api/merged?which=tiny', { cache: 'no-store' });
-        if (!resp.ok) {
-          const text = await resp.text().catch(() => '');
-          console.error('❌ API /api/merged non OK', resp.status, text);
-          showError(`Erreur API (${resp.status}) — Détails: ${text || 'aucun'}`);
-          return;
-        }
-
-        const data = await resp.json();
-        const events = (data.events || []).map(e => ({
+    fetch('/api/merged?which=tiny')
+      .then(response => response.json())
+      .then(data => {
+        const events = data.events.map(e => ({
           title: e.summary || 'Réservé',
           start: e.start,
           end: e.end,
           color: e.color || '#888',
-          extendedProps: { startType: e.startType, endType: e.endType }
+          extendedProps: {
+            startType: e.startType,
+            endType: e.endType
+          }
         }));
 
         const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
           initialView: 'dayGridMonth',
           locale: 'fr',
           height: 'auto',
-          events,
+          events: events,
           eventDidMount(info) {
             const el = info.el;
             el.style.overflow = 'visible';
-            el.style.transition = 'none';
+            el.style.borderRadius = '20px';
+            el.style.position = 'relative';
 
-            const { endType } = info.event.extendedProps;
+            const { startType, endType } = info.event.extendedProps;
 
-            // 🚪 Jour de départ → barre courte
+            // Départ → barre courte à gauche
             if (endType === 'departure') {
-              el.style.width = '20%';
+              el.style.width = '25%';
               el.style.marginLeft = '0';
               el.style.marginRight = 'auto';
+              el.style.borderTopRightRadius = '0';
+              el.style.borderBottomRightRadius = '0';
               el.style.zIndex = '5';
             }
-            // 📅 Jour d'arrivée ou séjour complet → barre pleine + chevauchement
-            else {
-              el.style.width = 'calc(100% + 6px)';
-              el.style.marginRight = '-6px';
+            // Arrivée → barre pleine + dépassement à droite
+            else if (startType === 'arrival') {
+              el.style.width = 'calc(100% + 15%)';
+              el.style.marginRight = '-15%';
               el.style.marginLeft = '0';
               el.style.zIndex = '10';
             }
+            // Séjour complet
+            else {
+              el.style.width = '100%';
+              el.style.marginLeft = '0';
+              el.style.marginRight = '0';
+              el.style.zIndex = '8';
+            }
 
-            // 🟦 Booking au-dessus si même jour qu'un autre
+            // Booking au-dessus d'Airbnb si chevauchement
             if (info.event.title.toLowerCase().includes('booking')) {
               el.style.zIndex = '15';
             }
-
-            el.style.position = 'relative';
           }
         });
-
         calendar.render();
-        if (!events.length) showError('Aucune réservation à afficher pour le moment.');
-
-      } catch (err) {
-        console.error('❌ Erreur JS côté front:', err);
-        showError(`Erreur de chargement du calendrier : ${err?.message || err}`);
-      }
-    })();
+      })
+      .catch(err => {
+        console.error('Erreur API:', err);
+        document.body.insertAdjacentHTML('beforeend', '<p style="color:red;">Erreur de chargement du calendrier.</p>');
+      });
   </script>
 </body>
 </html>
