@@ -15,13 +15,17 @@ const calendarURLs = {
 function getTypeFromDate(date, isStart, startDate, endDate) {
   if (!date || isNaN(date.getTime())) return 'full';
 
-  // nombre de nuits
   const diff = (endDate - startDate) / (1000 * 60 * 60 * 24);
-
-  // Séjour d'une seule nuit → tout est "full"
   if (diff <= 1) return 'full';
 
   return isStart ? 'arrival' : 'departure';
+}
+
+// ✅ Fonction utilitaire pour corriger la date de fin (ajouter 1 jour)
+function addOneDay(date) {
+  const newDate = new Date(date);
+  newDate.setDate(newDate.getDate() + 1);
+  return newDate;
 }
 
 async function fetchAndMergeCalendars(urls) {
@@ -42,12 +46,15 @@ async function fetchAndMergeCalendars(urls) {
         if (lowerUrl.includes('airbnb')) color = '#ff5a5f';
         if (lowerUrl.includes('booking')) color = '#0071c2';
 
-        const startType = getTypeFromDate(ev.start, true, ev.start, ev.end);
-        const endType = getTypeFromDate(ev.end, false, ev.start, ev.end);
+        // 🕒 Correction : ajouter un jour à la fin
+        const adjustedEnd = addOneDay(ev.end);
+
+        const startType = getTypeFromDate(ev.start, true, ev.start, adjustedEnd);
+        const endType = getTypeFromDate(adjustedEnd, false, ev.start, adjustedEnd);
 
         events.push({
           start: ev.start,
-          end: ev.end,
+          end: adjustedEnd, // 👈 ici la fin corrigée
           summary: ev.summary || 'Réservé',
           location: ev.location || '',
           source: url,
