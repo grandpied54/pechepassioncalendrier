@@ -15,7 +15,6 @@
       margin-bottom: 10px;
     }
     #back-link {
-      display: block;
       text-align: center;
       margin-bottom: 20px;
     }
@@ -43,6 +42,23 @@
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 🌿 Styles d'événements personnalisés */
+    .fc-event {
+      border: none;
+      color: white;
+      font-size: 0.9em;
+      border-radius: 20px;
+      padding: 2px 5px;
+    }
+    .fc-event.arrival {
+      border-top-left-radius: 20px;
+      border-bottom-left-radius: 20px;
+    }
+    .fc-event.departure {
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
     }
   </style>
 </head>
@@ -77,44 +93,22 @@
         const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
           initialView: 'dayGridMonth',
           locale: 'fr',
+          timeZone: 'local', // ✅ pour bien afficher les dates UTC
           height: 'auto',
           events: events,
           eventDidMount(info) {
             const el = info.el;
-            el.style.overflow = 'visible';
-            el.style.borderRadius = '20px';
-            el.style.position = 'relative';
-
             const { startType, endType } = info.event.extendedProps;
 
+            if (startType === 'arrival') {
+              el.classList.add('arrival');
+            }
             if (endType === 'departure') {
-              el.style.width = '20%';
-              el.style.marginLeft = '0';
-              el.style.marginRight = 'auto';
-              el.style.borderTopRightRadius = '0';
-              el.style.borderBottomRightRadius = '0';
-              el.style.zIndex = '5';
-            }
-            else if (startType === 'arrival') {
-              el.style.width = 'calc(100% + 25%)';
-              el.style.marginRight = '-25%';
-              el.style.marginLeft = '0';
-              el.style.borderTopRightRadius = '20px';
-              el.style.borderBottomRightRadius = '20px';
-              el.style.zIndex = '10';
-            }
-            else {
-              el.style.width = '100%';
-              el.style.marginLeft = '0';
-              el.style.marginRight = '0';
-              el.style.zIndex = '8';
-            }
-
-            if (info.event.title.toLowerCase().includes('booking')) {
-              el.style.zIndex = '15';
+              el.classList.add('departure');
             }
           }
         });
+
         calendar.render();
       })
       .catch(err => {
