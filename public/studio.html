@@ -41,12 +41,27 @@
       const res = await fetch('/api/merged?which=studio', { cache: 'no-store' });
       const data = await res.json();
 
+      // 📝 Traduction des titres en français
+      const events = data.events.map(ev => {
+        let titre = ev.title || 'Réservé';
+
+        if (ev.source.toLowerCase().includes('airbnb')) {
+          titre = 'Réservé Airbnb';
+        } else if (ev.source.toLowerCase().includes('booking')) {
+          titre = 'Réservé Booking';
+        } else if (titre.toLowerCase().includes('closed') || titre.toLowerCase().includes('not available')) {
+          titre = 'Fermé';
+        }
+
+        return { ...ev, title: titre };
+      });
+
       const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         initialView: 'dayGridMonth',
         locale: 'fr',
         timeZone: 'local',
         height: 'auto',
-        events: data.events,
+        events: events,
         eventDidMount(info) {
           const s = new Date(info.event.start);
           const e = new Date(info.event.end);
