@@ -1,8 +1,4 @@
-// pages/api/merged.js
 import ical from 'node-ical';
-
-// 🔧 variables d’env. à définir sur Vercel
-// TINY_AIRBNB_ICAL_URL, TINY_BOOKING_ICAL_URL, STUDIO_AIRBNB_ICAL_URL, STUDIO_BOOKING_ICAL_URL
 
 const calendarURLs = {
   tiny: [
@@ -15,14 +11,14 @@ const calendarURLs = {
   ]
 };
 
-// ➕ ajoute 1 jour à la fin (FullCalendar traite `end` comme exclusif)
+// ➕ Ajoute 1 jour à la date de fin
 function addOneDay(date) {
   const d = new Date(date);
   d.setDate(d.getDate() + 1);
   return d;
 }
 
-// date -> "YYYY-MM-DD" en **heure locale** (pour allDay)
+// 🧭 Convertit une date en YYYY-MM-DD (locale)
 function toLocalDateOnlyString(date) {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -52,7 +48,6 @@ async function fetchAndMergeCalendars(urls) {
 
         const adjustedEnd = addOneDay(ev.end);
 
-        // on renvoie des **dates au format YYYY-MM-DD** + allDay=true
         events.push({
           title: ev.summary || 'Réservé',
           start: toLocalDateOnlyString(ev.start),
@@ -67,7 +62,6 @@ async function fetchAndMergeCalendars(urls) {
     }
   }
 
-  // tri
   events.sort((a, b) => new Date(a.start) - new Date(b.start));
   return events;
 }
@@ -79,15 +73,10 @@ export default async function handler(req, res) {
 
     const urls = calendarURLs[which] || [];
     if (urls.length === 0 || urls.every(u => !u)) {
-      return res.status(400).json({
-        error: `Aucune URL iCal configurée pour "${which}".`,
-        hint: 'Définis les variables d’environnement sur Vercel.'
-      });
+      return res.status(400).json({ error: `Aucune URL iCal configurée pour "${which}".` });
     }
 
     const events = await fetchAndMergeCalendars(urls);
-
-    // entêtes sobres (pas de cache agressif pendant tes tests)
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ logement: which, count: events.length, events });
   } catch (e) {
