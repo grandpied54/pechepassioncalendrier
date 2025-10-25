@@ -41,37 +41,37 @@
       const res = await fetch('/api/merged?which=tiny', { cache: 'no-store' });
       const data = await res.json();
 
+      // 📝 Traduire les titres si besoin
+      const events = data.events.map(ev => {
+        let titre = ev.title || 'Réservé';
+
+        // Airbnb → "Réservé Airbnb"
+        if (ev.source.toLowerCase().includes('airbnb')) {
+          titre = 'Réservé Airbnb';
+        }
+        // Booking → "Réservé Booking"
+        else if (ev.source.toLowerCase().includes('booking')) {
+          titre = 'Réservé Booking';
+        }
+        // Autres → "Fermé"
+        else if (titre.toLowerCase().includes('closed') || titre.toLowerCase().includes('not available')) {
+          titre = 'Fermé';
+        }
+
+        return { ...ev, title: titre };
+      });
+
       const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         initialView: 'dayGridMonth',
         locale: 'fr',
         timeZone: 'local',
         height: 'auto',
-        events: data.events,
+        events: events,
         eventDidMount(info) {
           const s = new Date(info.event.start);
           const e = new Date(info.event.end);
+          // Tooltip : "Réservé Airbnb\n22/10/2025 → 28/10/2025"
           info.el.title = `${info.event.title}\n${s.toLocaleDateString()} → ${new Date(e - 1).toLocaleDateString()}`;
-
-          const el = info.el;
-          const endDay = new Date(e);
-          endDay.setDate(endDay.getDate() - 1);
-          const endDayString = endDay.toISOString().split('T')[0];
-          const eventEndString = info.event.endStr.split('T')[0];
-
-          // 🎯 Si c'est le jour de départ → barre raccourcie
-          if (eventEndString === endDayString) {
-            el.style.width = '30%';
-            el.style.marginLeft = '0';
-            el.style.borderTopRightRadius = '0';
-            el.style.borderBottomRightRadius = '0';
-            el.style.opacity = '0.9';
-            el.style.zIndex = '5';
-          } else {
-            // ✅ Barre normale
-            el.style.width = '100%';
-            el.style.borderRadius = '8px';
-            el.style.opacity = '1';
-          }
         }
       });
 
