@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Disponibilités - Studio Perché</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
+
+  <!-- ✅ FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
+
   <style>
     body { font-family: Arial, sans-serif; background:#f9f9f9; padding:20px; }
     h1 { text-align:center; margin:10px 0; }
@@ -29,8 +32,10 @@
 
   <div id="calendar"></div>
 
+  <!-- ✅ FullCalendar JS -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/fr.global.min.js"></script>
+
   <script>
     (async function () {
       const res = await fetch('/api/merged?which=studio', { cache: 'no-store' });
@@ -57,4 +62,3 @@
   </script>
 </body>
 </html>
-
