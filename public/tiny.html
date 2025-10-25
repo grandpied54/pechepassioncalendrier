@@ -1,66 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Disponibilités - Tiny House</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    #back-link {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #back-link a {
-      text-decoration: none;
-      color: #0071c2;
-      font-weight: bold;
-    }
-    #legend {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #legend span {
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      border-radius: 3px;
-      margin-right: 5px;
-      vertical-align: middle;
-    }
-    #calendar {
-      max-width: 900px;
-      margin: 0 auto;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    /* 🎨 Styles d'événements */
-    .fc-event {
-      border: none;
-      color: white;
-      font-size: 0.9em;
-      border-radius: 20px;
-      padding: 2px 5px;
-      cursor: pointer;
-    }
-    .fc-event.arrival {
-      border-top-left-radius: 20px;
-      border-bottom-left-radius: 20px;
-    }
-    .fc-event.departure {
-      border-top-right-radius: 20px;
-      border-bottom-right-radius: 20px;
-    }
+    body { font-family: Arial, sans-serif; background:#f9f9f9; padding:20px; }
+    h1 { text-align:center; margin:10px 0 6px; }
+    #back-link { text-align:center; margin-bottom:16px; }
+    #back-link a { color:#0071c2; text-decoration:none; font-weight:bold; }
+    #legend { text-align:center; margin:10px 0 16px; font-size:14px; color:#333; }
+    #legend span { display:inline-block; width:14px; height:14px; border-radius:3px; vertical-align:middle; margin-right:6px; }
+    #calendar { max-width: 900px; margin:0 auto; background:#fff; padding:12px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,.08); }
+    .fc-event { border:none; color:#fff; font-size:.9em; border-radius:8px; padding:2px 4px; }
   </style>
 </head>
 <body>
@@ -68,38 +20,40 @@
   <div id="back-link"><a href="/index.html">🏠 Retour à l'accueil</a></div>
 
   <div id="legend">
-    <span style="background:#ff5a5f;"></span> Airbnb
-    <span style="margin-left:20px;background:#0071c2;"></span> Booking
-    <span style="margin-left:20px;background:#888;"></span> Fermé
+    <span style="background:#ff5a5f"></span> Airbnb
+    &nbsp;&nbsp;&nbsp;
+    <span style="background:#0071c2"></span> Booking
+    &nbsp;&nbsp;&nbsp;
+    <span style="background:#888"></span> Fermé
   </div>
 
   <div id="calendar"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/fr.global.min.js"></script>
   <script>
-    fetch('/api/merged?which=tiny')
-      .then(response => response.json())
-      .then(data => {
-        const events = data.events.map(e => ({
-          title: e.summary || 'Réservé',
-          start: e.start,
-          end: e.end,
-          color: e.color || '#888',
-          extendedProps: {
-            startType: e.startType,
-            endType: e.endType,
-            source: e.source
-          }
-        }));
+    (async function () {
+      const res = await fetch('/api/merged?which=tiny', { cache: 'no-store' });
+      const data = await res.json();
 
-        const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-          initialView: 'dayGridMonth',
-          locale: 'fr',
-          timeZone: 'local', // ✅ corrige le décalage UTC
-          height: 'auto',
-          events: events,
-          eventDidMount(info) {
-            const el = info.el;
-            const { startType, endType, source } = info.event.extendedProps;
+      const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        locale: 'fr',
+        timeZone: 'local',
+        height: 'auto',
+        events: data.events,
+        eventDidMount(info) {
+          const s = new Date(info.event.start);
+          const e = new Date(info.event.end);
+          info.el.title = `${info.event.title}\n${s.toLocaleDateString()} → ${new Date(e - 1).toLocaleDateString()}`;
+        }
+      });
 
-            if (startType === 'arrival') el.classList.add('arrival');
+      calendar.render();
+    })().catch(err => {
+      console.error('Erreur:', err);
+      document.body.insertAdjacentHTML('beforeend','<p style="color:red;text-align:center">Erreur de chargement.</p>');
+    });
+  </script>
+</body>
+</html>
