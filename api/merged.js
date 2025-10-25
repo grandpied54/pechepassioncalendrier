@@ -1,4 +1,4 @@
-// pages/api/merged.js
+// ✅ pages/api/merged.js
 import ical from 'node-ical';
 
 const calendarURLs = {
@@ -12,7 +12,7 @@ const calendarURLs = {
   ]
 };
 
-// Convertir Date -> "YYYY-MM-DD" (local)
+// 👉 Petite fonction utilitaire pour formater la date au format YYYY-MM-DD
 function toLocalDateOnlyString(date) {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -21,6 +21,7 @@ function toLocalDateOnlyString(date) {
   return `${y}-${m}-${day}`;
 }
 
+// 👉 Couleur selon la source
 function pickColorFromURL(url = '') {
   const u = url.toLowerCase();
   if (u.includes('airbnb')) return '#ff5a5f';
@@ -28,6 +29,7 @@ function pickColorFromURL(url = '') {
   return '#888';
 }
 
+// 👉 Récupération et fusion des calendriers
 async function fetchAndMergeCalendars(urls) {
   const events = [];
   for (const url of urls) {
@@ -37,12 +39,10 @@ async function fetchAndMergeCalendars(urls) {
       for (const key in data) {
         const ev = data[key];
         if (!ev || ev.type !== 'VEVENT') continue;
-
-        // ❌ on n'ajoute plus 1 jour
         events.push({
           title: ev.summary || 'Réservé',
           start: toLocalDateOnlyString(ev.start),
-          end: toLocalDateOnlyString(ev.end),  // end exclusif
+          end: toLocalDateOnlyString(ev.end), // end exclusif → le jour de départ reste libre
           allDay: true,
           color: pickColorFromURL(url),
           source: url
@@ -57,13 +57,28 @@ async function fetchAndMergeCalendars(urls) {
 }
 
 export default async function handler(req, res) {
+  // ✅ CORS — permet les appels depuis n'importe quelle origine (y compris file:///)
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // ✅ Réponse aux préflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   try {
     let { which } = req.query;
     if (!which || !['tiny', 'studio'].includes(which)) which = 'tiny';
+
     const urls = calendarURLs[which] || [];
     if (urls.length === 0 || urls.every(u => !u)) {
-      return res.status(400).json({ error: `Aucune URL iCal configurée pour "${which}".` });
+      return res.status(400).json({
+        error: `Aucune URL iCal configurée pour "${which}".`
+      });
     }
+
     const events = await fetchAndMergeCalendars(urls);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ logement: which, count: events.length, events });
