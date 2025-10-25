@@ -12,12 +12,7 @@ const calendarURLs = {
   ]
 };
 
-function addOneDay(date) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + 1);
-  return d;
-}
-
+// Convertir Date -> "YYYY-MM-DD" (local)
 function toLocalDateOnlyString(date) {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -42,11 +37,12 @@ async function fetchAndMergeCalendars(urls) {
       for (const key in data) {
         const ev = data[key];
         if (!ev || ev.type !== 'VEVENT') continue;
-        const adjustedEnd = addOneDay(ev.end);
+
+        // ❌ on n'ajoute plus 1 jour
         events.push({
           title: ev.summary || 'Réservé',
           start: toLocalDateOnlyString(ev.start),
-          end: toLocalDateOnlyString(adjustedEnd),
+          end: toLocalDateOnlyString(ev.end),  // end exclusif
           allDay: true,
           color: pickColorFromURL(url),
           source: url
