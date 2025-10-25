@@ -54,3 +54,32 @@
 
           const el = info.el;
           const endDay = new Date(e);
+          endDay.setDate(endDay.getDate() - 1);
+          const endDayString = endDay.toISOString().split('T')[0];
+          const eventEndString = info.event.endStr.split('T')[0];
+
+          // 🎯 Si c'est le jour de départ → barre raccourcie
+          if (eventEndString === endDayString) {
+            el.style.width = '30%';
+            el.style.marginLeft = '0';
+            el.style.borderTopRightRadius = '0';
+            el.style.borderBottomRightRadius = '0';
+            el.style.opacity = '0.9';
+            el.style.zIndex = '5';
+          } else {
+            // ✅ Barre normale
+            el.style.width = '100%';
+            el.style.borderRadius = '8px';
+            el.style.opacity = '1';
+          }
+        }
+      });
+
+      calendar.render();
+    })().catch(err => {
+      console.error('Erreur:', err);
+      document.body.insertAdjacentHTML('beforeend','<p style="color:red;text-align:center">Erreur de chargement.</p>');
+    });
+  </script>
+</body>
+</html>
