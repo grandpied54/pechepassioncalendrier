@@ -1,120 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Disponibilités - Studio Perché</title>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    #back-link {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #back-link a {
-      text-decoration: none;
-      color: #0071c2;
-      font-weight: bold;
-    }
-    #legend {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    #legend span {
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      border-radius: 3px;
-      margin-right: 5px;
-      vertical-align: middle;
-    }
-    #calendar {
-      max-width: 900px;
-      margin: 0 auto;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    /* 🌿 Styles d'événements personnalisés */
-    .fc-event {
-      border: none;
-      color: white;
-      font-size: 0.9em;
-      border-radius: 20px;
-      padding: 2px 5px;
-    }
-    .fc-event.arrival {
-      border-top-left-radius: 20px;
-      border-bottom-left-radius: 20px;
-    }
-    .fc-event.departure {
-      border-top-right-radius: 20px;
-      border-bottom-right-radius: 20px;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Studio Perché — Disponibilités en temps réel</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Disponibilités - Studio Perché</h1>
-  <div id="back-link"><a href="/index.html">🏠 Retour à l'accueil</a></div>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand">🐟 Pêche Passion Confort</a>
+      <nav class="nav">
+        <a class="btn" href="tiny.html">Tiny House</a>
+        <a class="btn" href="studio.html">Studio Perché</a>
+      </nav>
+    </div>
+  </header>
 
-  <div id="legend">
-    <span style="background:#ff5a5f;"></span> Airbnb
-    <span style="margin-left:20px;background:#0071c2;"></span> Booking
-    <span style="margin-left:20px;background:#888;"></span> Fermé
-  </div>
-
-  <div id="calendar"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <main class="container">
+    <section class="section">
+      <h1>Studio Perché — Calendrier</h1>
+      <div class="cal-controls">
+        <button id="prev">◀</button>
+        <div id="monthLabel"></div>
+        <button id="next">▶</button>
+      </div>
+      <div id="calendar" class="calendar"></div>
+      <p class="small">Ce calendrier fusionne automatiquement Airbnb + Booking et se met à jour à chaque visite.</p>
+    </section>
+  </main>
   <script>
-    fetch('/api/merged?which=studio')
-      .then(response => response.json())
-      .then(data => {
-        const events = data.events.map(e => ({
-          title: e.summary || 'Réservé',
-          start: e.start,
-          end: e.end,
-          color: e.color || '#888',
-          extendedProps: {
-            startType: e.startType,
-            endType: e.endType
-          }
-        }));
-
-        const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-          initialView: 'dayGridMonth',
-          locale: 'fr',
-          timeZone: 'local', // ✅ pour bien afficher les dates UTC
-          height: 'auto',
-          events: events,
-          eventDidMount(info) {
-            const el = info.el;
-            const { startType, endType } = info.event.extendedProps;
-
-            if (startType === 'arrival') {
-              el.classList.add('arrival');
-            }
-            if (endType === 'departure') {
-              el.classList.add('departure');
-            }
-          }
-        });
-
-        calendar.render();
-      })
-      .catch(err => {
-        console.error('Erreur API:', err);
-        document.body.insertAdjacentHTML('beforeend', '<p style="color:red;">Erreur de chargement du calendrier.</p>');
-      });
+    window.CALENDAR_SOURCE = "studio";
   </script>
+  <script src="ui.js"></script>
 </body>
 </html>
