@@ -1,37 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Studio Perché — Disponibilités en temps réel</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Calendrier Studio Perché</title>
 </head>
 <body>
-  <header class="header">
-    <div class="container header-inner">
-      <a href="index.html" class="brand">🐟 Pêche Passion Confort</a>
-      <nav class="nav">
-        <a class="btn" href="tiny.html">Tiny House</a>
-        <a class="btn" href="studio.html">Studio Perché</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="section">
-      <h1>Studio Perché — Calendrier</h1>
-      <div class="cal-controls">
-        <button id="prev">◀</button>
-        <div id="monthLabel"></div>
-        <button id="next">▶</button>
-      </div>
-      <div id="calendar" class="calendar"></div>
-      <p class="small">Ce calendrier fusionne automatiquement Airbnb + Booking et se met à jour à chaque visite.</p>
-    </section>
-  </main>
+  <h1>Disponibilités - Studio Perché</h1>
   <script>
-    window.CALENDAR_SOURCE = "studio";
+    fetch('/api/merged?which=studio').then(r => r.json()).then(data => {
+      document.body.insertAdjacentHTML('beforeend', '<pre>'+JSON.stringify(data,null,2)+'</pre>');
+    });
   </script>
-  <script src="ui.js"></script>
 </body>
 </html>
