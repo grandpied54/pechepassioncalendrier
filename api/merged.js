@@ -12,14 +12,12 @@ const calendarURLs = {
   ]
 };
 
-// ➕ Ajoute 1 jour à la date de fin (FullCalendar utilise end exclusif)
 function addOneDay(date) {
   const d = new Date(date);
   d.setDate(d.getDate() + 1);
   return d;
 }
 
-// 🧭 Transforme une date en YYYY-MM-DD locale
 function toLocalDateOnlyString(date) {
   const d = new Date(date);
   const y = d.getFullYear();
@@ -28,7 +26,6 @@ function toLocalDateOnlyString(date) {
   return `${y}-${m}-${day}`;
 }
 
-// 🖌️ Couleur selon la source
 function pickColorFromURL(url = '') {
   const u = url.toLowerCase();
   if (u.includes('airbnb')) return '#ff5a5f';
@@ -38,7 +35,6 @@ function pickColorFromURL(url = '') {
 
 async function fetchAndMergeCalendars(urls) {
   const events = [];
-
   for (const url of urls) {
     if (!url) continue;
     try {
@@ -46,9 +42,7 @@ async function fetchAndMergeCalendars(urls) {
       for (const key in data) {
         const ev = data[key];
         if (!ev || ev.type !== 'VEVENT') continue;
-
         const adjustedEnd = addOneDay(ev.end);
-
         events.push({
           title: ev.summary || 'Réservé',
           start: toLocalDateOnlyString(ev.start),
@@ -62,7 +56,6 @@ async function fetchAndMergeCalendars(urls) {
       console.error(`❌ Erreur iCal pour ${url}:`, err.message);
     }
   }
-
   events.sort((a, b) => new Date(a.start) - new Date(b.start));
   return events;
 }
@@ -71,15 +64,10 @@ export default async function handler(req, res) {
   try {
     let { which } = req.query;
     if (!which || !['tiny', 'studio'].includes(which)) which = 'tiny';
-
     const urls = calendarURLs[which] || [];
     if (urls.length === 0 || urls.every(u => !u)) {
-      return res.status(400).json({
-        error: `Aucune URL iCal configurée pour "${which}".`,
-        hint: 'Définis les variables d’environnement sur Vercel.'
-      });
+      return res.status(400).json({ error: `Aucune URL iCal configurée pour "${which}".` });
     }
-
     const events = await fetchAndMergeCalendars(urls);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ logement: which, count: events.length, events });
