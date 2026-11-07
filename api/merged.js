@@ -29,6 +29,14 @@ function pickColorFromURL(url = '') {
   return '#888';
 }
 
+// 👉 Plateforme d'origine, sans le jeton de l'URL
+function sourceLabel(url = '') {
+  const u = url.toLowerCase();
+  if (u.includes('airbnb')) return 'airbnb';
+  if (u.includes('booking')) return 'booking';
+  return 'autre';
+}
+
 // 👉 Récupération et fusion des calendriers
 async function fetchAndMergeCalendars(urls) {
   const events = [];
@@ -45,11 +53,12 @@ async function fetchAndMergeCalendars(urls) {
           end: toLocalDateOnlyString(ev.end), // end exclusif → le jour de départ reste libre
           allDay: true,
           color: pickColorFromURL(url),
-          source: url
+          // Étiquette seulement : l'URL iCal contient un jeton privé, elle ne doit jamais être renvoyée
+          source: sourceLabel(url)
         });
       }
     } catch (err) {
-      console.error(`❌ Erreur iCal pour ${url}:`, err.message);
+      console.error(`❌ Erreur iCal pour ${sourceLabel(url)}:`, err.message);
     }
   }
   events.sort((a, b) => new Date(a.start) - new Date(b.start));
